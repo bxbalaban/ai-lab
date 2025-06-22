@@ -6,7 +6,7 @@ from rdflib import Graph, Namespace, RDF, URIRef, Literal
 from rdflib.namespace import XSD, RDFS
 
 BOT = Namespace("https://w3id.org/bot#")
-GEO = Namespace("http://example.org/geo#")
+BOTAILAB = Namespace("http://www.aiLab.org/botAiLab#")
 
 class GraphBuilder:
     def __init__(self, building, base_uri="http://example.org/building/"):
@@ -14,7 +14,7 @@ class GraphBuilder:
         self.base_uri = base_uri
         self.graph = Graph()
         self.graph.bind("bot", BOT)
-        self.graph.bind("geo", GEO)
+        self.graph.bind("botAiLab", BOTAILAB)
         self.boxes = []
 
     def build(self):
@@ -41,7 +41,7 @@ class GraphBuilder:
             return
         site_uri = self._make_uri("site")
         self.graph.add((site_uri, RDF.type, BOT.Site))
-        self.graph.add((self._make_uri("building"), BOT.hasSite, site_uri))
+        self.graph.add((site_uri, BOT.hasBuilding, self._make_uri("building")))
 
     def _add_storeys(self):
         if not hasattr(self.building, "storeys"):
@@ -52,6 +52,13 @@ class GraphBuilder:
             self.graph.add((storey_uri, RDFS.label, Literal(f"Storey {idx+1}")))
             self._serialize_geometry(storey_uri, storey)
             self.graph.add((self._make_uri("building"), BOT.hasStorey, storey_uri))
+            # Add adjacentZone to storey above and below (except first and last)
+            if idx > 0:
+                below_storey_uri = self._make_uri(f"storey_{idx}")
+                self.graph.add((storey_uri, BOT.adjacentZone, below_storey_uri))
+            if idx < len(self.building.storeys) - 1:
+                above_storey_uri = self._make_uri(f"storey_{idx+2}")
+                self.graph.add((storey_uri, BOT.adjacentZone, above_storey_uri))
 
     def _add_slabs(self):
         if not hasattr(self.building, "slabs"):
@@ -63,8 +70,9 @@ class GraphBuilder:
         floor_slab = getattr(self.building, "floor_slab", None)
         if floor_slab is not None:
             slab_uri = self._make_uri("floor_slab")
-            self.graph.add((slab_uri, RDF.type, BOT.Element))
+            self.graph.add((slab_uri, RDF.type, BOTAILAB.FloorSlab))
             self.graph.add((slab_uri, RDFS.label, Literal("Floor Slab")))
+            self._add_intersections(slab_uri, floor_slab)
             self._serialize_geometry(slab_uri, floor_slab)
             # Contained in first storey
             storey_uri = self._make_uri("storey_1")
@@ -73,8 +81,9 @@ class GraphBuilder:
         # Intermediate slabs (contained in next storey, adjacent to previous)
         for idx, slab in enumerate(self.building.slabs):
             slab_uri = self._make_uri(f"slab_{idx+1}")
-            self.graph.add((slab_uri, RDF.type, BOT.Element))
+            self.graph.add((slab_uri, RDF.type, BOTAILAB.Slab))
             self.graph.add((slab_uri, RDFS.label, Literal(f"Slab {idx+1}")))
+            self._add_intersections(slab_uri, slab)
             self._serialize_geometry(slab_uri, slab)
             # Contained in the next storey (storey_{idx+2}), if exists
             storey_contain_idx = idx + 2
@@ -84,19 +93,20 @@ class GraphBuilder:
             # Adjacent to previous storey (storey_{idx+1})
             if idx + 1 <= num_storeys:
                 prev_storey_uri = self._make_uri(f"storey_{idx+1}")
-                self.graph.add((slab_uri, BOT.adjacentElement, prev_storey_uri))
+                self.graph.add((prev_storey_uri, BOT.adjacentElement, slab_uri))
 
         # Roof slab
         roof_slab = getattr(self.building, "roof_slab", None)
         if roof_slab is not None:
             slab_uri = self._make_uri("roof_slab")
-            self.graph.add((slab_uri, RDF.type, BOT.Element))
+            self.graph.add((slab_uri, RDF.type, BOTAILAB.RoofSlab))
             self.graph.add((slab_uri, RDFS.label, Literal("Roof Slab")))
+            self._add_intersections(slab_uri, roof_slab)
             self._serialize_geometry(slab_uri, roof_slab)
             # Adjacent to the last storey
             if num_storeys > 0:
                 last_storey_uri = self._make_uri(f"storey_{num_storeys}")
-                self.graph.add((slab_uri, BOT.adjacentElement, last_storey_uri))
+                self.graph.add((last_storey_uri, BOT.adjacentElement, slab_uri))
 
     def _add_walls(self):
         if not hasattr(self.building, "walls"):
@@ -117,13 +127,14 @@ class GraphBuilder:
                 slab_above_uri = self._make_uri("roof_slab")
             for wall_idx, wall in enumerate(walls_in_storey):
                 wall_uri = self._make_uri(f"storey_{storey_idx+1}_wall_{wall_idx+1}")
-                self.graph.add((wall_uri, RDF.type, BOT.Element))
+                self.graph.add((wall_uri, RDF.type, BOTAILAB.Wall))
                 self.graph.add((wall_uri, RDFS.label, Literal("Wall")))
                 self._serialize_geometry(wall_uri, wall)
                 self.graph.add((storey_uri, BOT.containsElement, wall_uri))
                 # Add adjacency to slabs
-                self.graph.add((wall_uri, BOT.adjacentElement, slab_below_uri))
-                self.graph.add((wall_uri, BOT.adjacentElement, slab_above_uri))
+                self.graph.add((wall_uri, BOTAILAB.adjacentElement, slab_below_uri))
+                self.graph.add((wall_uri, BOTAILAB.adjacentElement, slab_above_uri))
+                self._add_intersections(wall_uri, wall)
 
     def _add_columns(self):
         if not hasattr(self.building, "columns"):
@@ -144,13 +155,49 @@ class GraphBuilder:
                 slab_above_uri = self._make_uri("roof_slab")
             for column_idx, column in enumerate(columns_in_storey):
                 column_uri = self._make_uri(f"storey_{storey_idx+1}_column_{column_idx+1}")
-                self.graph.add((column_uri, RDF.type, BOT.Element))
+                self.graph.add((column_uri, RDF.type, BOTAILAB.Column))
                 self.graph.add((column_uri, RDFS.label, Literal("Column")))
                 self._serialize_geometry(column_uri, column)
                 self.graph.add((storey_uri, BOT.containsElement, column_uri))
                 # Add adjacency to slabs
-                self.graph.add((column_uri, BOT.adjacentElement, slab_below_uri))
-                self.graph.add((column_uri, BOT.adjacentElement, slab_above_uri))
+                self.graph.add((column_uri, BOTAILAB.adjacentElement, slab_below_uri))
+                self.graph.add((column_uri, BOTAILAB.adjacentElement, slab_above_uri))
+                self._add_intersections(column_uri, column)
+
+    def _add_intersections(self, element_uri, geometry):
+        # Find intersection with columns
+        for storey_idx, columns_in_storey in enumerate(self.building.columns):
+            for column_idx, column in enumerate(columns_in_storey):
+                column_uri = self._make_uri(f"storey_{storey_idx+1}_column_{column_idx+1}")
+                intersection = rg.Intersect.Intersection.BrepBrep(geometry, column, 0.01)               
+                if intersection and (len(intersection[1]) > 0 or len(intersection[2]) > 0):
+                    self.graph.add((element_uri, BOTAILAB.intersectsElement, column_uri))
+                else:
+                    centroid_geo = geometry.GetBoundingBox(True).Center
+                    centroid_column = column.GetBoundingBox(True).Center
+                    if centroid_geo.Z < centroid_column.Z - 0.5:
+                        self.graph.add((element_uri, BOTAILAB.isBelow, column_uri))
+                    elif centroid_geo.Z > centroid_column.Z + 0.5:
+                        self.graph.add((element_uri, BOTAILAB.isAbove, column_uri))
+                    else:
+                        pass
+        
+        # Find intersection with walls
+        for storey_idx, walls_in_storey in enumerate(self.building.walls):
+            for wall_idx, wall in enumerate(walls_in_storey):
+                wall_uri = self._make_uri(f"storey_{storey_idx+1}_wall_{wall_idx+1}")
+                intersection = rg.Intersect.Intersection.BrepBrep(geometry, wall, 0.01)
+                if intersection and (len(intersection[1]) > 0 or len(intersection[2]) > 0):
+                    self.graph.add((element_uri, BOTAILAB.intersectsElement, wall_uri))
+                else:
+                    centroid_geo = geometry.GetBoundingBox(True).Center
+                    centroid_wall = wall.GetBoundingBox(True).Center
+                    if centroid_geo.Z < centroid_wall.Z - 0.5:
+                        self.graph.add((element_uri, BOTAILAB.isBelow, wall_uri))
+                    elif centroid_geo.Z > centroid_wall.Z + 0.5:
+                        self.graph.add((element_uri, BOTAILAB.isAbove, wall_uri))
+                    else:
+                        pass
 
     def _serialize_geometry(self, element_uri, geometry):
 
@@ -164,7 +211,7 @@ class GraphBuilder:
             min_angle = 0.0
             min_box = None
 
-            geometry = rg.Mesh.CreateFromBrep(geometry, rg.MeshingParameters.Default)[0]
+            #geometry = rg.Mesh.CreateFromBrep(geometry, rg.MeshingParameters.Smooth)[0]
 
             for i in range(int(angle_max / angle_step)):
                 angle = i * angle_step
@@ -175,7 +222,7 @@ class GraphBuilder:
                 plane_rot.Transform(xform)
                 # Get the oriented bounding box in world coordinates
                 oriented_box = geometry.GetBoundingBox(plane_rot)
-                # oriented_box is a Rhino.Geometry.Box
+                # oriented_box is a Rhino.geometry.Box
                 # Compute size vector
                 volume = oriented_box.Volume
                 if volume < min_volume:
@@ -201,9 +248,9 @@ class GraphBuilder:
             return location, min_angle, size
 
         location, angle, size = minimal_volume_bbox(geometry)
-        self.graph.add((element_uri, GEO.hasLocation, Literal(f"{location.X},{location.Y},{location.Z}", datatype=XSD.string)))
-        self.graph.add((element_uri, GEO.hasRotation, Literal(angle, datatype=XSD.double)))
-        self.graph.add((element_uri, GEO.hasSize, Literal(f"{size.X},{size.Y},{size.Z}", datatype=XSD.string)))
+        self.graph.add((element_uri, BOTAILAB.hasLocation, Literal(f"{location.X},{location.Y},{location.Z}", datatype=XSD.string)))
+        self.graph.add((element_uri, BOTAILAB.hasRotation, Literal(angle, datatype=XSD.string)))
+        self.graph.add((element_uri, BOTAILAB.hasSize, Literal(f"{size.X},{size.Y},{size.Z}", datatype=XSD.string)))
 
     def export_json(self):
         """
@@ -227,15 +274,15 @@ class GraphBuilder:
                 break
             # Get serialization (geometry)
             location = None
-            for loc in self.graph.objects(subj, GEO.hasLocation):
+            for loc in self.graph.objects(subj, BOTAILAB.hasLocation):
                 location = str(loc)
                 break
             rotation = None
-            for rot in self.graph.objects(subj, GEO.hasRotation):
+            for rot in self.graph.objects(subj, BOTAILAB.hasRotation):
                 rotation = float(rot)
                 break
             size = None
-            for sz in self.graph.objects(subj, GEO.hasSize):
+            for sz in self.graph.objects(subj, BOTAILAB.hasSize):
                 size = str(sz)
                 break
             serialization = {
@@ -243,13 +290,36 @@ class GraphBuilder:
                 "location": location,
                 "size": size
             } if location or rotation or size else None
+            # Get intersections
+            intersects = []
+            for intersection in self.graph.objects(subj, BOTAILAB.intersectsElement):
+                if str(intersection) != iri:
+                    intersects.append(str(intersection))
+            # Get vertical relationships
+            is_above = []
+            for above in self.graph.objects(subj, BOTAILAB.isAbove):
+                if str(above) != iri:
+                    is_above.append(str(above))
+            is_below = []
+            for below in self.graph.objects(subj, BOTAILAB.isBelow):
+                if str(below) != iri:
+                    is_below.append(str(below))
+            # Get adjacency
+            adjacency = []
+            for adj in self.graph.objects(subj, BOTAILAB.adjacentElement):
+                if str(adj) != iri:
+                    adjacency.append(str(adj))
 
             # Only add if there is geometry serialization
             if serialization and (serialization["location"] or serialization["rotation"] or serialization["size"]):
                 entry = {
                     "iri": iri,
                     "label": label,
-                    "serialization": serialization
+                    "serialization": serialization,
+                    "intersects": intersects,
+                    "isAbove": is_above,
+                    "isBelow": is_below,
+                    "adjacency": adjacency
                 }
                 result.append(entry)
 

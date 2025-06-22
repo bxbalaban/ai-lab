@@ -9,56 +9,56 @@ import math
 
 class Building:
     class Building:
-    """
-    Procedural Building Generator for Rhino/Grasshopper
+        """
+        Procedural Building Generator for Rhino/Grasshopper
 
-    This class generates a randomized building geometry using procedural methods, tailored for use
-    within Rhino/Grasshopper via the RhinoCommon geometry library. It provides methods to generate 
-    the site, building volume, storeys, slabs, walls, and columns, producing valid Brep objects 
-    and DataTrees suitable for parametric workflows.
+        This class generates a randomized building geometry using procedural methods, tailored for use
+        within Rhino/Grasshopper via the RhinoCommon geometry library. It provides methods to generate 
+        the site, building volume, storeys, slabs, walls, and columns, producing valid Brep objects 
+        and DataTrees suitable for parametric workflows.
 
-    Attributes:
-        site (rg.Polyline or None): Polyline representing the building site.
-        volume (rg.Brep or None): The main building volume as a Brep.
-        storeys (list[rg.Brep]): Breps for each building storey.
-        slabs (list[rg.Brep]): Breps for all slabs (floor, intermediate, roof).
-        floor_slab (rg.Brep or None): Ground floor slab Brep.
-        roof_slab (rg.Brep or None): Roof slab Brep.
-        walls (list[list[rg.Brep]]): Nested list of wall Breps per storey.
-        columns (list[list[rg.Brep]]): Nested list of column Breps per storey.
+        Attributes:
+            site (rg.Polyline or None): Polyline representing the building site.
+            volume (rg.Brep or None): The main building volume as a Brep.
+            storeys (list[rg.Brep]): Breps for each building storey.
+            slabs (list[rg.Brep]): Breps for all slabs (floor, intermediate, roof).
+            floor_slab (rg.Brep or None): Ground floor slab Brep.
+            roof_slab (rg.Brep or None): Roof slab Brep.
+            walls (list[list[rg.Brep]]): Nested list of wall Breps per storey.
+            columns (list[list[rg.Brep]]): Nested list of column Breps per storey.
 
-    Main Parameters (private):
-        __target_area (float): Desired site area (m²).
-        __min_length (float): Minimum side length for site and rectangles.
-        __area_tolerance (float): Allowed deviation for site area.
-        __min_height, __max_height (float): Min/max building height (m).
-        __slab_thickness (float): Slab thickness (randomized per building).
-        __min_wall_thickness, __max_wall_thickness (float): Wall thickness range (m).
-        __max_wall_tilt_deg (float): Maximum wall tilt angle (degrees).
-        __site_margin (float): Margin for offsetting site interior (m).
+        Main Parameters (private):
+            __target_area (float): Desired site area (m²).
+            __min_length (float): Minimum side length for site and rectangles.
+            __area_tolerance (float): Allowed deviation for site area.
+            __min_height, __max_height (float): Min/max building height (m).
+            __slab_thickness (float): Slab thickness (randomized per building).
+            __min_wall_thickness, __max_wall_thickness (float): Wall thickness range (m).
+            __max_wall_tilt_deg (float): Maximum wall tilt angle (degrees).
+            __site_margin (float): Margin for offsetting site interior (m).
 
-    Methods:
-        generate_site(max_attempts=100): Creates a rectangular site polyline close to the target area.
-        generate_volume(): Lofts between random base/roof curves to form the building volume.
-        generate_storeys(): Splits volume into storeys by intersection with extruded planes.
-        generate_slabs(): Generates slabs for each level and roof.
-        generate_walls(): Produces 1–2 random wall Breps per storey as DataTree.
-        generate_columns(): Creates 1–3 column Breps per storey as DataTree.
-        to_gh_tree(nested_list): Utility to convert nested lists to Grasshopper DataTrees.
+        Methods:
+            generate_site(max_attempts=100): Creates a rectangular site polyline close to the target area.
+            generate_volume(): Lofts between random base/roof curves to form the building volume.
+            generate_storeys(): Splits volume into storeys by intersection with extruded planes.
+            generate_slabs(): Generates slabs for each level and roof.
+            generate_walls(): Produces 1–2 random wall Breps per storey as DataTree.
+            generate_columns(): Creates 1–3 column Breps per storey as DataTree.
+            to_gh_tree(nested_list): Utility to convert nested lists to Grasshopper DataTrees.
 
-    Usage:
-        Instantiate the class, call generation methods in sequence to procedurally construct
-        a randomized building, then access the attributes for geometry output.
-        
-        Example:
-            bldg = Building()
-            bldg.generate_site()
-            bldg.generate_volume()
-            bldg.generate_storeys()
-            bldg.generate_slabs()
-            bldg.generate_walls()
-            bldg.generate_columns()
-    """
+        Usage:
+            Instantiate the class, call generation methods in sequence to procedurally construct
+            a randomized building, then access the attributes for geometry output.
+            
+            Example:
+                bldg = Building()
+                bldg.generate_site()
+                bldg.generate_volume()
+                bldg.generate_storeys()
+                bldg.generate_slabs()
+                bldg.generate_walls()
+                bldg.generate_columns()
+        """
     
     def __init__(self):
         # --- Site and area parameters ---
@@ -431,7 +431,7 @@ class Building:
             base_bbox = base.GetBoundingBox(True)
             walls_this_storey = []
 
-            num_lines = random.randint(1, 2)
+            num_lines = random.randint(1, 3)
             for _ in range(num_lines):
                 # Generate a random wall line inside the storey base
                 curve = get_valid_wall_line(base_crv, base_bbox.Min.Z)
@@ -513,7 +513,7 @@ class Building:
             base_bbox = base.GetBoundingBox(True)
             columns_this_storey = []
 
-            num_columns = random.randint(1, 3)
+            num_columns = random.randint(1, 4)
             for _ in range(num_columns):
                 pt = get_valid_column_point(base_crv, base_bbox.Min.Z)
                 if not pt:
