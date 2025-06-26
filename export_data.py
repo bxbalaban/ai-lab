@@ -102,7 +102,7 @@ if export:
         raise Exception("Combined mesh is not valid or empty.")
 
     # Write the STL file
-    # write_mesh_to_stl(combined, save_path + ".stl")
+    write_mesh_to_stl(combined, save_path + ".stl")
 
     # Optional: Output the actual filenames as Grasshopper output params
     ttl_file = save_path + ".ttl"

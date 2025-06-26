@@ -134,6 +134,8 @@ class GraphBuilder:
                 # Add adjacency to slabs
                 self.graph.add((wall_uri, BOTAILAB.adjacentElement, slab_below_uri))
                 self.graph.add((wall_uri, BOTAILAB.adjacentElement, slab_above_uri))
+                self.graph.add((wall_uri, BOTAILAB.isSupportedBy, slab_below_uri))
+                self.graph.add((wall_uri, BOTAILAB.supports, slab_above_uri))
                 self._add_intersections(wall_uri, wall)
 
     def _add_columns(self):
@@ -162,6 +164,8 @@ class GraphBuilder:
                 # Add adjacency to slabs
                 self.graph.add((column_uri, BOTAILAB.adjacentElement, slab_below_uri))
                 self.graph.add((column_uri, BOTAILAB.adjacentElement, slab_above_uri))
+                self.graph.add((column_uri, BOTAILAB.isSupportedBy, slab_below_uri))
+                self.graph.add((column_uri, BOTAILAB.supports, slab_above_uri))
                 self._add_intersections(column_uri, column)
 
     def _add_intersections(self, element_uri, geometry):
