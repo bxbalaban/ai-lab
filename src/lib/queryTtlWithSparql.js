@@ -16,8 +16,11 @@ export async function queryTtlWithSparql(ttlContent, sparqlQuery) {
 
   return bindings.map(binding => {
     const out = {};
-    for (const [key, value] of binding.entries()) {
-      out[key] = value.value;
+    // Get all variable names from the binding
+    const variables = binding.keys();
+    for (const variable of variables) {
+      const value = binding.get(variable);
+      out[variable] = value ? value.value : null;
     }
     return out;
   });

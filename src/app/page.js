@@ -13,6 +13,7 @@ export default function Home() {
   const [highlightedIndex, setHighlightedIndex] = useState(null);
   const [mode, setMode] = useState("chat"); // "chat" or "sparql"
   const [sparqlResults, setSparqlResults] = useState(null);
+  const [uploadedTtlContent, setUploadedTtlContent] = useState(null);
 
   const cyRef = useRef(null);
   const cyInstance = useRef(null);
@@ -91,7 +92,10 @@ WHERE {
         const res = await fetch("/api/sparql", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sparqlQuery: message }),
+          body: JSON.stringify({ 
+            sparqlQuery: message,
+            ttlContent: uploadedTtlContent 
+          }),
         });
 
         const data = await res.json();
@@ -106,7 +110,10 @@ WHERE {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ 
+            message,
+            ttlContent: uploadedTtlContent 
+          }),
         });
 
         const data = await res.json();
@@ -255,13 +262,65 @@ WHERE {
         </div>
 
         <form className="flex flex-col gap-2 w-full max-w-md" onSubmit={handleSubmit}>
+          {/* TTL File Status */}
+          <div className="text-sm text-gray-600 mb-2">
+            {uploadedTtlContent ? (
+              <span className="text-green-600">✓ Using uploaded TTL file</span>
+            ) : (
+              <span className="text-blue-600">📁 Using default ifc_graph.ttl</span>
+            )}
+          </div>
+          
+          {/* Upload Button */}
+          <div className="flex gap-2">
+            <input
+              type="file"
+              accept=".ttl,.txt"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const content = event.target.result;
+                    setMessage(content);
+                    setUploadedTtlContent(content);
+                  };
+                  reader.readAsText(file);
+                }
+              }}
+              className="hidden"
+              id="ttl-upload"
+            />
+            <label
+              htmlFor="ttl-upload"
+              className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-sm text-center"
+            >
+              Upload TTL File
+            </label>
+            {uploadedTtlContent && (
+              <button
+                type="button"
+                onClick={() => {
+                  setUploadedTtlContent(null);
+                  setMessage("");
+                }}
+                className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm text-center"
+              >
+                Clear TTL
+              </button>
+            )}
+          </div>
+          
+          {/* Text Area */}
           <Textarea
             placeholder={mode === "sparql" ? "Enter your SPARQL query..." : "Type your question..."}
-            className="flex-1"
+            className="w-full"
             rows={4}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
+          
+          {/* Send Button */}
           <Button type="submit" className="self-end" disabled={loading}>
             {loading ? "Sending..." : mode === "sparql" ? "Execute Query" : "Send"}
           </Button>

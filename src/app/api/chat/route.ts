@@ -6,11 +6,16 @@ import path from 'path';
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
+    const { message, ttlContent: uploadedTtlContent } = await request.json();
     
-    // Load the TTL file
-    const ttlPath = path.join(process.cwd(), 'public', 'data', 'ifc_graph.ttl');
-    const ttlContent = fs.readFileSync(ttlPath, 'utf-8');
+    // Use uploaded TTL content if provided, otherwise load the default file
+    let ttlContent;
+    if (uploadedTtlContent) {
+      ttlContent = uploadedTtlContent;
+    } else {
+      const ttlPath = path.join(process.cwd(), 'public', 'data', 'ifc_graph.ttl');
+      ttlContent = fs.readFileSync(ttlPath, 'utf-8');
+    }
 
     // First, ask OpenAI to analyze if this question can be answered with SPARQL
     const analysisPrompt = `You are an expert in building information modeling (BIM) and SPARQL queries. 
