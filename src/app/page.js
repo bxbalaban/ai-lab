@@ -21,40 +21,54 @@ export default function Home() {
   const exampleQueries = [
     {
       name: "Find all Storey elements",
-      query: `PREFIX ifc: <http://example.org/ifc#>
+      query: `PREFIX bot: <https://w3id.org/bot#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?storey ?label
 WHERE {
-  ?storey a ifc:IfcBuildingStorey .
-  ?storey ifc:name ?label .
+  ?storey a bot:Storey .
+  ?storey rdfs:label ?label .
 }`
     },
     {
       name: "Find all Walls",
-      query: `PREFIX ifc: <http://example.org/ifc#>
+      query: `PREFIX botAiLab: <http://www.aiLab.org/botAiLab#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?wall ?label
 WHERE {
-  ?wall a ifc:IfcWall .
-  ?wall ifc:name ?label .
+  ?wall a botAiLab:Wall .
+  ?wall rdfs:label ?label .
 }`
     },
     {
       name: "Find all Columns",
-      query: `PREFIX ifc: <http://example.org/ifc#>
+      query: `PREFIX botAiLab: <http://www.aiLab.org/botAiLab#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?column ?label
 WHERE {
-  ?column a ifc:IfcColumn .
-  ?column ifc:name ?label .
+  ?column a botAiLab:Column .
+  ?column rdfs:label ?label .
 }`
     },
     {
-      name: "Find elements in a specific Storey",
-      query: `PREFIX ifc: <http://example.org/ifc#>
+      name: "Find elements in Storey 1",
+      query: `PREFIX bot: <https://w3id.org/bot#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?element ?label
 WHERE {
-  ?storey a ifc:IfcBuildingStorey .
-  ?storey ifc:name "Storey 1" .
-  ?element ifc:containedInStructure ?storey .
-  ?element ifc:name ?label .
+  ?storey a bot:Storey .
+  ?storey rdfs:label "Storey 1" .
+  ?storey bot:containsElement ?element .
+  ?element rdfs:label ?label .
+}`
+    },
+    {
+      name: "Find all Slabs",
+      query: `PREFIX botAiLab: <http://www.aiLab.org/botAiLab#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?slab ?label
+WHERE {
+  ?slab a botAiLab:Slab .
+  ?slab rdfs:label ?label .
 }`
     }
   ];
@@ -97,6 +111,15 @@ WHERE {
 
         const data = await res.json();
         setResponse(data.reply || "No response");
+        
+        // If the chat response includes SPARQL results, display them
+        if (data.results && data.sparqlQuery) {
+          setSparqlResults({
+            results: data.results,
+            query: data.sparqlQuery,
+            count: data.results.length
+          });
+        }
       }
     } catch (error) {
       setResponse("Error: " + error.message);
