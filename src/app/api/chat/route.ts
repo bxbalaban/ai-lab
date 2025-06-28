@@ -18,29 +18,54 @@ export async function POST(request: Request) {
     }
 
     // First, ask OpenAI to analyze if this question can be answered with SPARQL
-    const analysisPrompt = `You are an expert in building information modeling (BIM) and SPARQL queries. 
-
-I have a TTL (Turtle) file containing building data with the following structure:
-- Building elements: Storey, Wall, Column, Slab, FloorSlab, RoofSlab
-- Properties: location, rotation, size, label
-- Relationships: containsElement, adjacentElement, adjacentZone, intersectsElement, isAbove, isBelow
-
-The data uses these prefixes:
-- bot: <https://w3id.org/bot#>
-- botAiLab: <http://www.aiLab.org/botAiLab#>
-- rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-User question: "${message}"
-
-Please analyze this question and respond with a JSON object in this exact format:
-{
-  "canAnswerWithSparql": true/false,
-  "reasoning": "explanation of why this can or cannot be answered with SPARQL",
-  "sparqlQuery": "the SPARQL query if canAnswerWithSparql is true, otherwise null",
-  "recommendedQuestions": ["list of 3-5 relevant questions about the building data that can be answered"]
-}
-
-Only respond with the JSON object, no other text.`;
+    const analysisPrompt = `
+    You are an expert in building information modeling (BIM) and SPARQL queries.
+    
+    I have a TTL (Turtle) file containing building data with the following structure:
+    - Building elements: Storey, Wall, Column, Slab, FloorSlab, RoofSlab
+    - Properties: location, rotation, size, label
+    - Relationships: containsElement, adjacentElement, adjacentZone, intersectsElement, isAbove, isBelow
+    
+    The data uses these prefixes:
+    - bot: <https://w3id.org/bot#> (for Storey, Building, Site)
+    - botAiLab: <http://www.aiLab.org/botAiLab#> (for Wall, Column, Slab, FloorSlab, RoofSlab)
+    - rdfs: <http://www.w3.org/2000/01/rdf-schema#> (for label property)
+    
+    CRITICAL RULES:
+    - Storey elements use: ?element a bot:Storey . ?element rdfs:label ?label .
+    - Wall, Column, Slab, FloorSlab, RoofSlab elements use: ?element a botAiLab:Wall . ?element rdfs:label ?label . (or botAiLab:Column, botAiLab:Slab, etc.)
+    - NEVER use bot:Wall, bot:Column, or bot:Slab (these do not exist).
+    - ALWAYS include rdfs:label for readable names in SELECT and WHERE.
+    - ALWAYS include the PREFIX declarations in your SPARQL query.
+    
+    EXAMPLES (CORRECT):
+    - Find all walls:
+    PREFIX botAiLab: <http://www.aiLab.org/botAiLab#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    SELECT ?wall ?label WHERE { ?wall a botAiLab:Wall . ?wall rdfs:label ?label . }
+    
+    - Find all storeys:
+    PREFIX bot: <https://w3id.org/bot#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    SELECT ?storey ?label WHERE { ?storey a bot:Storey . ?storey rdfs:label ?label . }
+    
+    EXAMPLES (INCORRECT, DO NOT DO THIS!):
+    - DO NOT use: ?wall a bot:Wall .
+    - DO NOT use: ?column a bot:Column .
+    - DO NOT use: ?slab a bot:Slab .
+    
+    User question: "${message}"
+    
+    Please analyze this question and respond with a JSON object in this exact format:
+    {
+      "canAnswerWithSparql": true/false,
+      "reasoning": "explanation of why this can or cannot be answered with SPARQL",
+      "sparqlQuery": "the SPARQL query if canAnswerWithSparql is true, otherwise null",
+      "recommendedQuestions": ["list of 3-5 relevant questions about the building data that can be answered"]
+    }
+    
+    Only respond with the JSON object, no other text.
+    `;
 
     const analysisCompletion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
