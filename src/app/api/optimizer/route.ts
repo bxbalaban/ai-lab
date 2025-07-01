@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     // 3) Spawn your Python optimizer script
     //    Adjust the relative path to where your script actually lives.
-    const scriptPath = path.join(process.cwd(), 'scripts', 'test.py');
+    const scriptPath = path.join(process.cwd(), 'scripts', 'optimizer.py');
 
     const result = await new Promise<{ stdout: string; stderr: string }>(
       (resolve, reject) => {
