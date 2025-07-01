@@ -271,7 +271,7 @@ WHERE {
             )}
           </div>
           
-          {/* Upload Button */}
+          {/* Upload/Optimize/Clear Buttons */}
           <div className="flex gap-2">
             <input
               type="file"
@@ -297,6 +297,13 @@ WHERE {
             >
               Upload TTL File
             </label>
+            <button
+              type="button"
+              onClick={handleSubmit} //TODO change this into handle optimze with the ML
+              className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm text-center"
+            >
+              Optimize TTL
+            </button>
             {uploadedTtlContent && (
               <button
                 type="button"
