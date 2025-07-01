@@ -78,6 +78,28 @@ WHERE {
     setMessage(query);
   };
 
+  
+  const handleOptimize = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/python', {  // <-- match this to your file
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ttlContent: uploadedTtlContent }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unknown error');
+
+      // Use the same key you returned above:
+      alert('✅ Python finished:\n' + data.output);
+    } catch (err) {
+      console.error(err);
+      alert('🚨 Optimization failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -299,7 +321,7 @@ WHERE {
             </label>
             <button
               type="button"
-              onClick={handleSubmit} //TODO change this into handle optimze with the ML
+              onClick={handleOptimize} //TODO change this into handle optimze with the ML
               className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm text-center"
             >
               Optimize TTL
