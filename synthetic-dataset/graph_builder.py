@@ -215,7 +215,13 @@ class GraphBuilder:
             min_angle = 0.0
             min_box = None
 
-            #geometry = rg.Mesh.CreateFromBrep(geometry, rg.MeshingParameters.Smooth)[0]
+            # Shrink all faces of the input geometry before further processing
+            geometry.Faces.ShrinkFaces()
+            geometry.CullUnusedVertices()
+            geometry.CullUnusedFaces()
+            geometry.CullUnusedEdges()
+            
+            #geometry = rg.Mesh.CreateFromBrep(geometry, rg.MeshingParameters.Default)[0]
 
             for i in range(int(angle_max / angle_step)):
                 angle = i * angle_step
@@ -240,14 +246,15 @@ class GraphBuilder:
                 location = bbox.Min
                 size = bbox.Max - bbox.Min
                 return location, 0.0, size
-
-            # Use box's corner (origin) as location
-            location = min_box.PointAt(0,0,0)
+            
             size = min_box.Diagonal
 
             plane = rg.Plane.WorldXY
-            plane.Rotate(min_angle, rg.Vector3d.ZAxis)    
-            self.boxes.append(rg.Box(plane, min_box))
+            plane.Rotate(min_angle, rg.Vector3d.ZAxis)
+            box_world =  rg.Box(plane, min_box)   
+            self.boxes.append(box_world)
+            
+            location = box_world.PointAt(0, 0, 0)
 
             return location, min_angle, size
 
