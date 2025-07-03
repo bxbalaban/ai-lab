@@ -1,16 +1,14 @@
-// app/api/optimize/route.ts  (or pages/api/optimize.ts for the pages router)
-
 import { NextResponse } from 'next/server';
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
+import fs from 'fs/promises';
 
 export async function POST(request: Request) {
   let tempFilePath: string | null = null;
 
   try {
-    // 1) Receive the raw TTL content
     const { ttlContent } = await request.json();
     if (typeof ttlContent !== 'string') {
       return NextResponse.json(
@@ -19,22 +17,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2) Write it out to a temp file
     const tmpDir = os.tmpdir();
     const fileName = `upload_${Date.now()}.ttl`;
     tempFilePath = path.join(tmpDir, fileName);
     await writeFile(tempFilePath, ttlContent, 'utf8');
 
-    // 3) Spawn your Python optimizer script
-    //    Adjust the relative path to where your script actually lives.
     const scriptPath = path.join(process.cwd(), 'scripts', 'optimizer.py');
 
     const result = await new Promise<{ stdout: string; stderr: string }>(
-      (resolve, reject) => {
+      async (resolve, reject) => {
         const py = spawn('python3', [scriptPath, tempFilePath]);
         let stdout = '';
         let stderr = '';
-
+        
         py.stdout.on('data', (data) => {
           stdout += data.toString();
         });
@@ -51,11 +46,11 @@ export async function POST(request: Request) {
         });
       }
     );
-
-    // 4) Return the Python script’s output
+    const content = await fs.readFile(tempFilePath, 'utf-8');
     return NextResponse.json({
       message: 'Optimization complete',
       output: result.stdout,
+      content: content
     });
   } catch (error: any) {
     console.error('Error in /api/optimize:', error);
@@ -64,7 +59,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   } finally {
-    // 5) Clean up the temp file if it was created
     if (tempFilePath) {
       try {
         await unlink(tempFilePath);

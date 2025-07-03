@@ -92,8 +92,8 @@ WHERE {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unknown error');
-
-      // set the content and open the dialog
+      setUploadedTtlContent(data.content);
+      setMessage(data.content);
       setModalContent(`✅ Python finished:\n${data.output}`);
       dialogRef.current?.showModal();
     } catch (err) {
@@ -102,6 +102,7 @@ WHERE {
       dialogRef.current?.showModal();
     } finally {
       setLoading(false);
+      console.log(uploadedTtlContent);
     }
   };
 

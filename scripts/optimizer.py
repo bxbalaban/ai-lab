@@ -4,6 +4,7 @@ import torch
 from torch import nn
 from torch_geometric.nn import RGCNConv
 import rdflib
+from rdflib import Graph
 from rdflib.namespace import Namespace
 from shapely import wkt
 from rdflib.namespace import NamespaceManager
@@ -115,17 +116,6 @@ def predict_missing_links(ttl_file, model_path, top_k=10):
     original_graph = rdflib.Graph()
     original_graph.parse(ttl_file, format="turtle")
 
-    test_graph = rdflib.Graph()
-    test_graph += original_graph
-    
-    supports_triples = list(test_graph.triples((None, BOTAI.supports, None)))
-
-    for triple in supports_triples:
-        test_graph.remove(triple)
-
-    temp_ttl_path = "temp_inference.ttl"
-    test_graph.serialize(temp_ttl_path, format="turtle")
-
     x, edge_index, _, _, index_node, edge_type = load_graph_for_inference(ttl_file)
 
     model = GeoLinkPredictor(in_channels=7)
@@ -166,24 +156,19 @@ def predict_missing_links(ttl_file, model_path, top_k=10):
         predicted_labels = [candidate_labels[idx] for idx in filtered_indices]
 
         print(f"📊 Top {top_k} predicted missing `botAiLab:supports` links:")
-        for score, (i, j), is_correct in zip(filtered_scores, predicted_links, predicted_labels):
+        for score, (i, j), _ in zip(filtered_scores, predicted_links, predicted_labels):
             subj_uri = rdflib.URIRef(index_node[i])
             obj_uri = rdflib.URIRef(index_node[j])
-            status = "✅" if is_correct else "❌"
-            print(f"{status} {subj_uri} → {obj_uri} | score={score:.4f}")
+            print(f"{subj_uri} → {obj_uri} | score={score:.4f}")
             original_graph.add((subj_uri, BOTAI.supports, obj_uri))
-
-        folder = os.path.dirname(ttl_file)
-        filename = os.path.basename(ttl_file)
-        enriched_path = os.path.join(folder, f"enriched_{filename}")
 
         namespace_manager = NamespaceManager(original_graph)
         namespace_manager.bind("local", LOCAL)
         original_graph.namespace_manager = namespace_manager
-        original_graph.serialize(destination=enriched_path, format="turtle")
 
         accuracy = sum(predicted_labels) / len(predicted_labels)
-        # print(f"\n Accuracy of top-{top_k} predictions: {accuracy:.2%}")
+        original_graph.serialize(destination=ttl_file, format="turtle")
+        
         return accuracy
     
 def main():
