@@ -1,0 +1,357 @@
+@prefix bot: <https://w3id.org/bot#> .
+@prefix botAiLab: <http://www.aiLab.org/botAiLab#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/building/site> a bot:Site ;
+    bot:hasBuilding <http://example.org/building/building> .
+
+<http://example.org/building/building> a bot:Building ;
+    rdfs:label "Building" ;
+    botAiLab:hasLocation "19.637485724630096,2.390513218609345,0.0"^^xsd:string ;
+    botAiLab:hasRotation "1.6"^^xsd:string ;
+    botAiLab:hasSize "8.253505711460274,15.68310770498067,12.733815278811823"^^xsd:string ;
+    bot:hasStorey <http://example.org/building/storey_1>,
+        <http://example.org/building/storey_2>,
+        <http://example.org/building/storey_3> .
+
+<http://example.org/building/storey_1> a bot:Storey ;
+    rdfs:label "Storey 1" ;
+    botAiLab:hasLocation "20.10038593768257,3.3414297749140363,0.0"^^xsd:string ;
+    botAiLab:hasRotation "1.7000000000000002"^^xsd:string ;
+    botAiLab:hasSize "7.875022044466252,15.981697951093922,3.6154080323822635"^^xsd:string ;
+    bot:adjacentElement <http://example.org/building/slab_1> ;
+    bot:adjacentZone <http://example.org/building/storey_2> ;
+    bot:containsElement <http://example.org/building/floor_slab>,
+        <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> .
+
+<http://example.org/building/storey_3> a bot:Storey ;
+    rdfs:label "Storey 3" ;
+    botAiLab:hasLocation "4.076174270633496,10.344721206511258,7.445477400731336"^^xsd:string ;
+    botAiLab:hasRotation "4.7"^^xsd:string ;
+    botAiLab:hasSize "7.359667233847176,13.819623780509984,5.288337878080488"^^xsd:string ;
+    bot:adjacentElement <http://example.org/building/roof_slab> ;
+    bot:adjacentZone <http://example.org/building/storey_2> ;
+    bot:containsElement <http://example.org/building/slab_2>,
+        <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> .
+
+<http://example.org/building/storey_2> a bot:Storey ;
+    rdfs:label "Storey 2" ;
+    botAiLab:hasLocation "18.84963843081298,2.70747509617734,3.6154080323822613"^^xsd:string ;
+    botAiLab:hasRotation "1.6"^^xsd:string ;
+    botAiLab:hasSize "7.80201872347293,14.739246992237248,3.8300693683490823"^^xsd:string ;
+    bot:adjacentElement <http://example.org/building/slab_2> ;
+    bot:adjacentZone <http://example.org/building/storey_1>,
+        <http://example.org/building/storey_3> ;
+    bot:containsElement <http://example.org/building/slab_1>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> .
+
+<http://example.org/building/floor_slab> a botAiLab:FloorSlab ;
+    rdfs:label "Floor Slab" ;
+    botAiLab:hasLocation "20.660594928059762,4.955002046783702,0.0"^^xsd:string ;
+    botAiLab:hasRotation "1.9000000000000001"^^xsd:string ;
+    botAiLab:hasSize "7.157342129216002,16.202109540335798,0.2373680720554539"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2>,
+        <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> .
+
+<http://example.org/building/storey_3_column_3> a botAiLab:Column ;
+    rdfs:label "Column" ;
+    botAiLab:adjacentElement <http://example.org/building/roof_slab>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "14.09457135924902,7.527824752368859,7.6828454727867905"^^xsd:string ;
+    botAiLab:hasRotation "2.5"^^xsd:string ;
+    botAiLab:hasSize "0.5365918265614447,0.6485037077680218,5.050969806025031"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_column_3> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_2> ;
+    botAiLab:supports <http://example.org/building/roof_slab> .
+
+<http://example.org/building/storey_3_wall_1> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/roof_slab>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "12.010614958374164,4.204548576815133,7.682845472786794"^^xsd:string ;
+    botAiLab:hasRotation "2.5"^^xsd:string ;
+    botAiLab:hasSize "4.512243526437749,0.30236908276492613,5.050969806025027"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_wall_1> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_2> ;
+    botAiLab:supports <http://example.org/building/roof_slab> .
+
+<http://example.org/building/storey_3_wall_3> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/roof_slab>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "14.392268433742268,8.556258862947207,7.682845472786794"^^xsd:string ;
+    botAiLab:hasRotation "1.8"^^xsd:string ;
+    botAiLab:hasSize "0.30310638430090364,2.136472993262416,5.050969806025027"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_2> ;
+    botAiLab:supports <http://example.org/building/roof_slab> .
+
+<http://example.org/building/roof_slab> a botAiLab:RoofSlab ;
+    rdfs:label "Roof Slab" ;
+    botAiLab:hasLocation "4.074293364369958,10.192908065098475,12.73381527881182"^^xsd:string ;
+    botAiLab:hasRotation "4.7"^^xsd:string ;
+    botAiLab:hasSize "6.670210657414777,12.992844341108281,0.2373680720554585"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> .
+
+<http://example.org/building/storey_3_column_1> a botAiLab:Column ;
+    rdfs:label "Column" ;
+    botAiLab:adjacentElement <http://example.org/building/roof_slab>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "9.132207352943398,7.641483302051926,7.682845472786794"^^xsd:string ;
+    botAiLab:hasRotation "0.0"^^xsd:string ;
+    botAiLab:hasSize "0.6985966784076112,0.3391121436910378,5.050969806025027"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_wall_2> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_2> ;
+    botAiLab:supports <http://example.org/building/roof_slab> .
+
+<http://example.org/building/storey_3_column_2> a botAiLab:Column ;
+    rdfs:label "Column" ;
+    botAiLab:adjacentElement <http://example.org/building/roof_slab>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "10.54180126955115,7.542334100358062,7.682845472786794"^^xsd:string ;
+    botAiLab:hasRotation "0.0"^^xsd:string ;
+    botAiLab:hasSize "0.35454029839466195,0.6047527211541261,5.050969806025027"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_wall_2> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_2> ;
+    botAiLab:supports <http://example.org/building/roof_slab> .
+
+<http://example.org/building/slab_1> a botAiLab:Slab ;
+    rdfs:label "Slab 1" ;
+    botAiLab:hasLocation "18.849638430812977,2.70747509617734,3.615408032382261"^^xsd:string ;
+    botAiLab:hasRotation "1.6"^^xsd:string ;
+    botAiLab:hasSize "7.80201872347293,14.739246992237245,0.2373680720554554"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> .
+
+<http://example.org/building/storey_3_wall_2> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/roof_slab>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "15.483065985792198,8.216043083376283,7.682845472786794"^^xsd:string ;
+    botAiLab:hasRotation "3.2"^^xsd:string ;
+    botAiLab:hasSize "6.867612880224961,0.28275824293093166,5.050969806025027"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_wall_2> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2>,
+        <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_2> ;
+    botAiLab:supports <http://example.org/building/roof_slab> .
+
+<http://example.org/building/storey_1_column_1> a botAiLab:Column ;
+    rdfs:label "Column" ;
+    botAiLab:adjacentElement <http://example.org/building/floor_slab>,
+        <http://example.org/building/slab_1> ;
+    botAiLab:hasLocation "16.140985204681126,7.156670517457239,0.2373680720554538"^^xsd:string ;
+    botAiLab:hasRotation "0.8"^^xsd:string ;
+    botAiLab:hasSize "0.7688401005862744,0.7807734394815249,3.378039960326807"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_1_column_1> ;
+    botAiLab:isBelow <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2>,
+        <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isSupportedBy <http://example.org/building/floor_slab> ;
+    botAiLab:supports <http://example.org/building/slab_1> .
+
+<http://example.org/building/storey_2_column_1> a botAiLab:Column ;
+    rdfs:label "Column" ;
+    botAiLab:adjacentElement <http://example.org/building/slab_1>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "8.276259401274526,4.713115365685089,3.852776104437716"^^xsd:string ;
+    botAiLab:hasRotation "0.0"^^xsd:string ;
+    botAiLab:hasSize "0.6695567581498594,0.5856216388960318,3.5927012962936207"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_2_column_1> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_1> ;
+    botAiLab:supports <http://example.org/building/slab_2> .
+
+<http://example.org/building/storey_2_wall_1> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/slab_1>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "6.409337844954753,5.40049594055653,3.852776104437716"^^xsd:string ;
+    botAiLab:hasRotation "5.0"^^xsd:string ;
+    botAiLab:hasSize "0.3762983904756707,10.898958589539241,3.5927012962936207"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_2_wall_1> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_1> ;
+    botAiLab:supports <http://example.org/building/slab_2> .
+
+<http://example.org/building/storey_2_wall_2> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/slab_1>,
+        <http://example.org/building/slab_2> ;
+    botAiLab:hasLocation "12.265753057511219,4.585173926314905,3.852776104437716"^^xsd:string ;
+    botAiLab:hasRotation "5.300000000000001"^^xsd:string ;
+    botAiLab:hasSize "0.2189272979100063,2.3323851756833385,3.5927012962936207"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_2_wall_2> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isSupportedBy <http://example.org/building/slab_1> ;
+    botAiLab:supports <http://example.org/building/slab_2> .
+
+<http://example.org/building/storey_1_wall_1> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/floor_slab>,
+        <http://example.org/building/slab_1> ;
+    botAiLab:hasLocation "13.529445183486736,5.218908972777945,0.23736807205545388"^^xsd:string ;
+    botAiLab:hasRotation "2.9000000000000004"^^xsd:string ;
+    botAiLab:hasSize "4.607098387990073,0.34778466962148435,3.378039960326806"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2>,
+        <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isSupportedBy <http://example.org/building/floor_slab> ;
+    botAiLab:supports <http://example.org/building/slab_1> .
+
+<http://example.org/building/storey_1_wall_2> a botAiLab:Wall ;
+    rdfs:label "Wall" ;
+    botAiLab:adjacentElement <http://example.org/building/floor_slab>,
+        <http://example.org/building/slab_1> ;
+    botAiLab:hasLocation "14.460464347095769,7.064638620040541,0.23736807205545388"^^xsd:string ;
+    botAiLab:hasRotation "2.0"^^xsd:string ;
+    botAiLab:hasSize "0.3952551925523551,6.887199473872613,3.3780399603268063"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> ;
+    botAiLab:isBelow <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2>,
+        <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isSupportedBy <http://example.org/building/floor_slab> ;
+    botAiLab:supports <http://example.org/building/slab_1> .
+
+<http://example.org/building/slab_2> a botAiLab:Slab ;
+    rdfs:label "Slab 2" ;
+    botAiLab:hasLocation "17.421356685925875,2.4062246101371176,7.44547740073134"^^xsd:string ;
+    botAiLab:hasRotation "1.5"^^xsd:string ;
+    botAiLab:hasSize "7.431462655822314,13.257386896085212,0.23736807205545585"^^xsd:string ;
+    botAiLab:intersectsElement <http://example.org/building/storey_2_column_1>,
+        <http://example.org/building/storey_2_wall_1>,
+        <http://example.org/building/storey_2_wall_2>,
+        <http://example.org/building/storey_3_column_1>,
+        <http://example.org/building/storey_3_column_2>,
+        <http://example.org/building/storey_3_column_3>,
+        <http://example.org/building/storey_3_wall_1>,
+        <http://example.org/building/storey_3_wall_2>,
+        <http://example.org/building/storey_3_wall_3> ;
+    botAiLab:isAbove <http://example.org/building/storey_1_column_1>,
+        <http://example.org/building/storey_1_wall_1>,
+        <http://example.org/building/storey_1_wall_2> .
+

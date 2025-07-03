@@ -1,0 +1,131 @@
+@prefix : <http://www.aiLab.org/botAiLab#> .
+@prefix bot: <https://w3id.org/bot#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix botAiLab: <http://www.aiLab.org/botAiLab#> .
+@base <http://www.aiLab.org/botAiLab#> .
+
+<http://www.aiLab.org/botAiLab> rdf:type owl:Ontology ;
+                                 owl:versionIRI <http://www.aiLab.org/botAiLab/0.0.1> ;
+                                 owl:imports <https://w3id.org/bot-0.3.2> .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.aiLab.org/botAiLab#adjacentElement
+botAiLab:adjacentElement rdf:type owl:ObjectProperty ;
+                         rdfs:domain bot:Element ;
+                         rdfs:range bot:Element ;
+                         owl:propertyDisjointWith botAiLab:intersectsElement ,
+                                                  botAiLab:isIntersectedByElement ;
+                         rdfs:label "adjacent Element" .
+
+
+###  http://www.aiLab.org/botAiLab#intersectsElement
+botAiLab:intersectsElement rdf:type owl:ObjectProperty ;
+                           rdfs:domain bot:Element ;
+                           rdfs:range bot:Element ;
+                           rdfs:label "intersects Element" .
+
+
+###  http://www.aiLab.org/botAiLab#isAbove
+botAiLab:isAbove rdf:type owl:ObjectProperty ;
+                 owl:inverseOf botAiLab:isBelow ;
+                 rdfs:domain bot:Element ;
+                 rdfs:range bot:Element ;
+                 owl:propertyDisjointWith botAiLab:isBelow ;
+                 rdfs:label "is Above" .
+
+
+###  http://www.aiLab.org/botAiLab#isBelow
+botAiLab:isBelow rdf:type owl:ObjectProperty ;
+                 rdfs:domain bot:Element ;
+                 rdfs:range bot:Element ;
+                 rdfs:label "is Below" .
+
+
+###  http://www.aiLab.org/botAiLab#isIntersectedByElement
+botAiLab:isIntersectedByElement rdf:type owl:ObjectProperty ;
+                                rdfs:domain bot:Element ;
+                                rdfs:range bot:Element ;
+                                rdfs:label "is Intersected By Element" .
+
+
+###  http://www.aiLab.org/botAiLab#isSupportedBy
+botAiLab:isSupportedBy rdf:type owl:ObjectProperty ;
+                       owl:inverseOf botAiLab:supports ;
+                       rdfs:domain bot:Element ;
+                       rdfs:range bot:Element ;
+                       rdfs:label "is Supported By" .
+
+
+###  http://www.aiLab.org/botAiLab#supports
+botAiLab:supports rdf:type owl:ObjectProperty ;
+                  rdfs:domain bot:Element ;
+                  rdfs:range bot:Element ;
+                  rdfs:label "supports" .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.aiLab.org/botAiLab#hasLocation
+botAiLab:hasLocation rdf:type owl:DatatypeProperty ;
+                     rdfs:domain owl:Thing ;
+                     rdfs:range xsd:string ;
+                     rdfs:comment "A string containing the location of a thing in a model in 3D coordinates" .
+
+
+###  http://www.aiLab.org/botAiLab#hasRotation
+botAiLab:hasRotation rdf:type owl:DatatypeProperty ;
+                     rdfs:domain owl:Thing ;
+                     rdfs:range xsd:string ;
+                     rdfs:comment "A string containing the rotation of a thing in a model in as number in radians" .
+
+
+###  http://www.aiLab.org/botAiLab#hasSize
+botAiLab:hasSize rdf:type owl:DatatypeProperty ;
+                 rdfs:domain owl:Thing ;
+                 rdfs:comment "A string containing the size of a thing in a model as 3D vector" .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://www.aiLab.org/botAiLab#Column
+botAiLab:Column rdf:type owl:Class ;
+                rdfs:subClassOf bot:Element ;
+                rdfs:comment "A column in a building" .
+
+
+###  http://www.aiLab.org/botAiLab#FloorSlab
+botAiLab:FloorSlab rdf:type owl:Class ;
+                   rdfs:subClassOf botAiLab:Slab ;
+                   rdfs:comment "The first slab of a building (foundation)" .
+
+
+###  http://www.aiLab.org/botAiLab#RoofSlab
+botAiLab:RoofSlab rdf:type owl:Class ;
+                  rdfs:subClassOf botAiLab:Slab ;
+                  rdfs:comment "The last slab of a building (roof)" .
+
+
+###  http://www.aiLab.org/botAiLab#Slab
+botAiLab:Slab rdf:type owl:Class ;
+              rdfs:subClassOf bot:Element ;
+              rdfs:comment "A slab in a building" .
+
+
+###  http://www.aiLab.org/botAiLab#Wall
+botAiLab:Wall rdf:type owl:Class ;
+              rdfs:subClassOf bot:Element ;
+              rdfs:comment "A wall in a building" .
+
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
