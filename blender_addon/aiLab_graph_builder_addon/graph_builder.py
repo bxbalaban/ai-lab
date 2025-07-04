@@ -281,20 +281,5 @@ class GraphBuilder:
         """Export the RDF graph to Turtle format."""
         self.graph.serialize(destination=filepath, format="turtle")
         print(f"Graph saved to {filepath}")
-
-
-# === Example usage ===
-source_collection_name = "Building1"
-filepath_ttl = r"C:\Users\Jonas\bwSyncShare\ITECH2325\04_Seminars\04_09_KnowledgeRepresentationForBuildings\Exercises\Repository\ai-lab\blender_addon\example_files\from_blender"
-
-if source_collection_name in bpy.data.collections:
-    building_collection = bpy.data.collections[source_collection_name]
-else:
-    raise Exception(f"Collection '{source_collection_name}' not found!")
-
-graph_builder = GraphBuilder(building_collection)
-graph_builder.build()
-graph_builder.send_over_http()
-graph_builder.save_graph(filepath_ttl + r"\building_graph.ttl")
-
-print("Graph built and saved!")
+        
+        
