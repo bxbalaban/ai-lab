@@ -17,6 +17,7 @@ export default function Home() {
   const [sparqlResults, setSparqlResults] = useState(null);
   const [uploadedTtlContent, setUploadedTtlContent] = useState(null);
   const [stlUrl, setStlUrl] = useState(null);
+  const [optimizedTtlContent, setOptimizedTtlContent] = useState(null);
   const dialogRef = useRef(null);
 
   const cyRef = useRef(null);
@@ -95,7 +96,7 @@ WHERE {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unknown error');
       setUploadedTtlContent(data.content);
-      setMessage(data.content);
+      setOptimizedTtlContent(data.content);
       setModalContent(`✅ Python finished:\n${data.output}`);
       dialogRef.current?.showModal();
     } catch (err) {
@@ -312,7 +313,6 @@ WHERE {
                   const reader = new FileReader();
                   reader.onload = (event) => {
                     const content = event.target.result;
-                    setMessage(content);
                     setUploadedTtlContent(content);
                   };
                   reader.readAsText(file);
@@ -329,11 +329,46 @@ WHERE {
             </label>
             <button
               type="button"
-              onClick={handleOptimize} 
-              className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm text-center"
+              onClick={() => {
+                if (!uploadedTtlContent) {
+                  setModalContent('Please upload a TTL file before optimizing.');
+                  dialogRef.current?.showModal();
+                  return;
+                }
+                handleOptimize();
+              }}
+              className={`px-3 py-2 text-white rounded text-sm text-center ${uploadedTtlContent ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-300 cursor-not-allowed'}`}
+              disabled={!uploadedTtlContent}
             >
               Optimize TTL
             </button>
+            {optimizedTtlContent ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const blob = new Blob([optimizedTtlContent], { type: 'text/turtle' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'optimized.ttl';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm text-center"
+              >
+                Download Optimized TTL
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="px-3 py-2 bg-gray-300 text-white rounded text-sm text-center cursor-not-allowed"
+              >
+                Download Optimized TTL
+              </button>
+            )}
             <dialog ref={dialogRef} className="p-4 rounded-lg shadow-lg">
               <pre style={{ whiteSpace: 'pre-wrap' }}>{modalContent}</pre>
               <div style={{ textAlign: 'right', marginTop: '1em' }}>
@@ -362,6 +397,7 @@ WHERE {
                 type="button"
                 onClick={() => {
                   setUploadedTtlContent(null);
+                  setOptimizedTtlContent(null);
                   setMessage("");
                 }}
                 className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm text-center"
