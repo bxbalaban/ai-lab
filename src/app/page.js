@@ -4,6 +4,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Button } from "../components/ui/button";
 import cytoscape from "cytoscape";
 import { parseTtlToGraph } from "../lib/parseTtlToGraph";
+import STLViewer from "../components/STLViewer";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -15,6 +16,7 @@ export default function Home() {
   const [mode, setMode] = useState("chat"); // "chat" or "sparql"
   const [sparqlResults, setSparqlResults] = useState(null);
   const [uploadedTtlContent, setUploadedTtlContent] = useState(null);
+  const [stlUrl, setStlUrl] = useState(null);
   const dialogRef = useRef(null);
 
   const cyRef = useRef(null);
@@ -299,7 +301,7 @@ WHERE {
             )}
           </div>
           
-          {/* Upload/Optimize/Clear Buttons */}
+          {/* Upload/Optimize/Clear/Upload STL Buttons */}
           <div className="flex gap-2">
             <input
               type="file"
@@ -338,6 +340,23 @@ WHERE {
                 <button onClick={() => dialogRef.current?.close()}>Close</button>
               </div>
             </dialog>
+            {/* Upload STL Button */}
+            <input
+              type="file"
+              accept=".stl"
+              id="stl-upload"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files[0];
+                if (file) setStlUrl(URL.createObjectURL(file));
+              }}
+            />
+            <label
+              htmlFor="stl-upload"
+              className="px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 cursor-pointer text-sm text-center"
+            >
+              Upload STL File
+            </label>
             {uploadedTtlContent && (
               <button
                 type="button"
@@ -400,30 +419,12 @@ WHERE {
           </div>
         )}
 
-        <div className="flex w-full h-[400px] gap-4">
-          {/* Left: Edges List */}
-          <div className="w-1/3 bg-white border rounded p-4 overflow-auto">
-            <h2 className="font-bold mb-2">Edges</h2>
-            <ul className="list-disc pl-5 text-sm space-y-1">
-              {edgesList.length === 0 ? (
-                <li className="text-gray-500">Loading edges...</li>
-              ) : (
-                edgesList.map((edge, index) => (
-                  <li
-                    key={index}
-                    className={`cursor-pointer transition-colors rounded px-1 ${highlightedIndex === index ? "bg-green-200 font-bold" : ""
-                      }`}
-                  >
-                    {edge.source} --[{edge.label}]→ {edge.target}
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-
-          {/* Right: Graph */}
-          <div className="w-2/3 bg-gray-100 border rounded flex items-center justify-center">
-            <div ref={cyRef} className="w-full h-[400px]" />
+        <div className="flex w-full h-[400px] justify-center items-center">
+          {/* Centered STL Viewer (shows uploaded or default STL) */}
+          <div className="bg-gray-100 border rounded flex flex-col items-center justify-center w-full max-w-3xl">
+            <div style={{ width: '100%', height: '350px' }}>
+              <STLViewer url={stlUrl || '/data/model.stl'} />
+            </div>
           </div>
         </div>
 
