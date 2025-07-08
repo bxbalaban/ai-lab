@@ -76,6 +76,16 @@ WHERE {
   ?slab a botAiLab:Slab .
   ?slab rdfs:label ?label .
 }`
+    },
+    {
+      name: "Find all Storeys",
+      query: `PREFIX bot: <https://w3id.org/bot#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?storey ?label
+WHERE {
+  ?storey a bot:Storey .
+  ?storey rdfs:label ?label .
+}`
     }
   ];
 
@@ -105,7 +115,6 @@ WHERE {
       dialogRef.current?.showModal();
     } finally {
       setLoading(false);
-      console.log(uploadedTtlContent);
     }
   };
 
@@ -117,6 +126,9 @@ WHERE {
     setResponse("");
     setSparqlResults(null);
 
+    // Use optimized TTL if available, otherwise uploaded TTL
+    const ttlToUse = optimizedTtlContent || uploadedTtlContent;
+
     try {
       if (mode === "sparql") {
         // Handle SPARQL query
@@ -125,7 +137,7 @@ WHERE {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             sparqlQuery: message,
-            ttlContent: uploadedTtlContent 
+            ttlContent: ttlToUse
           }),
         });
 
@@ -143,7 +155,7 @@ WHERE {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             message,
-            ttlContent: uploadedTtlContent 
+            ttlContent: ttlToUse
           }),
         });
 
@@ -295,7 +307,9 @@ WHERE {
         <form className="flex flex-col gap-2 w-full max-w-md" onSubmit={handleSubmit}>
           {/* TTL File Status */}
           <div className="text-sm text-gray-600 mb-2">
-            {uploadedTtlContent ? (
+            {optimizedTtlContent ? (
+              <span className="text-green-600">✓ Using optimized TTL file</span>
+            ) : uploadedTtlContent ? (
               <span className="text-green-600">✓ Using uploaded TTL file</span>
             ) : (
               <span className="text-blue-600">📁 Using default ifc_graph.ttl</span>
