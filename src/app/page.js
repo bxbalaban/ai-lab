@@ -9,11 +9,13 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
+  const [modalContent, setModalContent] = useState('');
   const [edgesList, setEdgesList] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(null);
   const [mode, setMode] = useState("chat"); // "chat" or "sparql"
   const [sparqlResults, setSparqlResults] = useState(null);
   const [uploadedTtlContent, setUploadedTtlContent] = useState(null);
+  const dialogRef = useRef(null);
 
   const cyRef = useRef(null);
   const cyInstance = useRef(null);
@@ -76,6 +78,32 @@ WHERE {
 
   const loadExampleQuery = (query) => {
     setMessage(query);
+  };
+
+
+  
+  const handleOptimize = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/optimizer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ttlContent: uploadedTtlContent }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unknown error');
+      setUploadedTtlContent(data.content);
+      setMessage(data.content);
+      setModalContent(`✅ Python finished:\n${data.output}`);
+      dialogRef.current?.showModal();
+    } catch (err) {
+      console.error(err);
+      setModalContent(`🚨 Optimization failed:\n${err.message}`);
+      dialogRef.current?.showModal();
+    } finally {
+      setLoading(false);
+      console.log(uploadedTtlContent);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -299,11 +327,17 @@ WHERE {
             </label>
             <button
               type="button"
-              onClick={handleSubmit} //TODO change this into handle optimze with the ML
+              onClick={handleOptimize} 
               className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm text-center"
             >
               Optimize TTL
             </button>
+            <dialog ref={dialogRef} className="p-4 rounded-lg shadow-lg">
+              <pre style={{ whiteSpace: 'pre-wrap' }}>{modalContent}</pre>
+              <div style={{ textAlign: 'right', marginTop: '1em' }}>
+                <button onClick={() => dialogRef.current?.close()}>Close</button>
+              </div>
+            </dialog>
             {uploadedTtlContent && (
               <button
                 type="button"
