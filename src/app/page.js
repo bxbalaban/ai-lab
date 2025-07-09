@@ -18,6 +18,7 @@ export default function Home() {
   const [uploadedTtlContent, setUploadedTtlContent] = useState(null);
   const [stlUrl, setStlUrl] = useState(null);
   const [optimizedTtlContent, setOptimizedTtlContent] = useState(null);
+  const [viewMode, setViewMode] = useState("stl"); // "stl" or "graph"
   const dialogRef = useRef(null);
 
   const cyRef = useRef(null);
@@ -179,12 +180,19 @@ WHERE {
   };
 
   useEffect(() => {
-    if (!cyRef.current) return;
+    if (!cyRef.current || viewMode !== "graph") return;
 
     const loadAndRenderGraph = async () => {
       try {
-        const res = await fetch("/data/ifc_graph.ttl");
-        const ttlContent = await res.text();
+        let ttlContent;
+        if (optimizedTtlContent) {
+          ttlContent = optimizedTtlContent;
+        } else if (uploadedTtlContent) {
+          ttlContent = uploadedTtlContent;
+        } else {
+          const res = await fetch("/data/ifc_graph.ttl");
+          ttlContent = await res.text();
+        }
         const { nodes, edges, edgesRaw } = await parseTtlToGraph(ttlContent);
 
         if (cyInstance.current) {
@@ -283,7 +291,7 @@ WHERE {
         cyInstance.current.destroy();
       }
     };
-  }, []);
+  }, [optimizedTtlContent, uploadedTtlContent, viewMode]);
 
   return (
     <div className="flex flex-col items-center min-h-screen p-8 pb-20 sm:p-20">
@@ -469,13 +477,34 @@ WHERE {
           </div>
         )}
 
+        <div className="flex w-full justify-center items-center gap-4 mb-4">
+          <Button
+            variant={viewMode === "stl" ? "default" : "outline"}
+            onClick={() => setViewMode("stl")}
+          >
+            Show STL
+          </Button>
+          <Button
+            variant={viewMode === "graph" ? "default" : "outline"}
+            onClick={() => setViewMode("graph")}
+          >
+            Show Graph
+          </Button>
+        </div>
+
         <div className="flex w-full h-[400px] justify-center items-center">
-          {/* Centered STL Viewer (shows uploaded or default STL) */}
-          <div className="bg-gray-100 border rounded flex flex-col items-center justify-center w-full max-w-3xl">
-            <div style={{ width: '100%', height: '350px' }}>
-              <STLViewer url={stlUrl || '/data/model.stl'} />
+          {/* Conditionally render STL Viewer or Cytoscape Graph */}
+          {viewMode === "stl" ? (
+            <div className="bg-gray-100 border rounded flex flex-col items-center justify-center w-full max-w-3xl">
+              <div style={{ width: '100%', height: '350px' }}>
+                <STLViewer url={stlUrl || '/data/model.stl'} />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gray-100 border rounded flex flex-col items-center justify-center w-full max-w-3xl" style={{ width: '100%', height: '350px' }}>
+              <div ref={cyRef} style={{ width: '100%', height: '100%' }} />
+            </div>
+          )}
         </div>
 
         {response && (
