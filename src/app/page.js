@@ -4,6 +4,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Button } from "../components/ui/button";
 import cytoscape from "cytoscape";
 import { parseTtlToGraph } from "../lib/parseTtlToGraph";
+import STLViewer from "../components/STLViewer";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -15,6 +16,8 @@ export default function Home() {
   const [mode, setMode] = useState("chat"); // "chat" or "sparql"
   const [sparqlResults, setSparqlResults] = useState(null);
   const [uploadedTtlContent, setUploadedTtlContent] = useState(null);
+  const [stlUrl, setStlUrl] = useState(null);
+  const [optimizedTtlContent, setOptimizedTtlContent] = useState(null);
   const dialogRef = useRef(null);
 
   const cyRef = useRef(null);
@@ -73,6 +76,16 @@ WHERE {
   ?slab a botAiLab:Slab .
   ?slab rdfs:label ?label .
 }`
+    },
+    {
+      name: "Find all Storeys",
+      query: `PREFIX bot: <https://w3id.org/bot#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?storey ?label
+WHERE {
+  ?storey a bot:Storey .
+  ?storey rdfs:label ?label .
+}`
     }
   ];
 
@@ -93,7 +106,7 @@ WHERE {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unknown error');
       setUploadedTtlContent(data.content);
-      setMessage(data.content);
+      setOptimizedTtlContent(data.content);
       setModalContent(`✅ Python finished:\n${data.output}`);
       dialogRef.current?.showModal();
     } catch (err) {
@@ -102,7 +115,6 @@ WHERE {
       dialogRef.current?.showModal();
     } finally {
       setLoading(false);
-      console.log(uploadedTtlContent);
     }
   };
 
@@ -114,6 +126,9 @@ WHERE {
     setResponse("");
     setSparqlResults(null);
 
+    // Use optimized TTL if available, otherwise uploaded TTL
+    const ttlToUse = optimizedTtlContent || uploadedTtlContent;
+
     try {
       if (mode === "sparql") {
         // Handle SPARQL query
@@ -122,7 +137,7 @@ WHERE {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             sparqlQuery: message,
-            ttlContent: uploadedTtlContent 
+            ttlContent: ttlToUse
           }),
         });
 
@@ -140,7 +155,7 @@ WHERE {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             message,
-            ttlContent: uploadedTtlContent 
+            ttlContent: ttlToUse
           }),
         });
 
@@ -292,14 +307,16 @@ WHERE {
         <form className="flex flex-col gap-2 w-full max-w-md" onSubmit={handleSubmit}>
           {/* TTL File Status */}
           <div className="text-sm text-gray-600 mb-2">
-            {uploadedTtlContent ? (
+            {optimizedTtlContent ? (
+              <span className="text-green-600">✓ Using optimized TTL file</span>
+            ) : uploadedTtlContent ? (
               <span className="text-green-600">✓ Using uploaded TTL file</span>
             ) : (
               <span className="text-blue-600">📁 Using default ifc_graph.ttl</span>
             )}
           </div>
           
-          {/* Upload/Optimize/Clear Buttons */}
+          {/* Upload/Optimize/Clear/Upload STL Buttons */}
           <div className="flex gap-2">
             <input
               type="file"
@@ -310,7 +327,6 @@ WHERE {
                   const reader = new FileReader();
                   reader.onload = (event) => {
                     const content = event.target.result;
-                    setMessage(content);
                     setUploadedTtlContent(content);
                   };
                   reader.readAsText(file);
@@ -327,22 +343,75 @@ WHERE {
             </label>
             <button
               type="button"
-              onClick={handleOptimize} 
-              className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm text-center"
+              onClick={() => {
+                if (!uploadedTtlContent) {
+                  setModalContent('Please upload a TTL file before optimizing.');
+                  dialogRef.current?.showModal();
+                  return;
+                }
+                handleOptimize();
+              }}
+              className={`px-3 py-2 text-white rounded text-sm text-center ${uploadedTtlContent ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-300 cursor-not-allowed'}`}
+              disabled={!uploadedTtlContent}
             >
               Optimize TTL
             </button>
+            {optimizedTtlContent ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const blob = new Blob([optimizedTtlContent], { type: 'text/turtle' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'optimized.ttl';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm text-center"
+              >
+                Download Optimized TTL
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="px-3 py-2 bg-gray-300 text-white rounded text-sm text-center cursor-not-allowed"
+              >
+                Download Optimized TTL
+              </button>
+            )}
             <dialog ref={dialogRef} className="p-4 rounded-lg shadow-lg">
               <pre style={{ whiteSpace: 'pre-wrap' }}>{modalContent}</pre>
               <div style={{ textAlign: 'right', marginTop: '1em' }}>
                 <button onClick={() => dialogRef.current?.close()}>Close</button>
               </div>
             </dialog>
+            {/* Upload STL Button */}
+            <input
+              type="file"
+              accept=".stl"
+              id="stl-upload"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files[0];
+                if (file) setStlUrl(URL.createObjectURL(file));
+              }}
+            />
+            <label
+              htmlFor="stl-upload"
+              className="px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 cursor-pointer text-sm text-center"
+            >
+              Upload STL File
+            </label>
             {uploadedTtlContent && (
               <button
                 type="button"
                 onClick={() => {
                   setUploadedTtlContent(null);
+                  setOptimizedTtlContent(null);
                   setMessage("");
                 }}
                 className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm text-center"
@@ -400,30 +469,12 @@ WHERE {
           </div>
         )}
 
-        <div className="flex w-full h-[400px] gap-4">
-          {/* Left: Edges List */}
-          <div className="w-1/3 bg-white border rounded p-4 overflow-auto">
-            <h2 className="font-bold mb-2">Edges</h2>
-            <ul className="list-disc pl-5 text-sm space-y-1">
-              {edgesList.length === 0 ? (
-                <li className="text-gray-500">Loading edges...</li>
-              ) : (
-                edgesList.map((edge, index) => (
-                  <li
-                    key={index}
-                    className={`cursor-pointer transition-colors rounded px-1 ${highlightedIndex === index ? "bg-green-200 font-bold" : ""
-                      }`}
-                  >
-                    {edge.source} --[{edge.label}]→ {edge.target}
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-
-          {/* Right: Graph */}
-          <div className="w-2/3 bg-gray-100 border rounded flex items-center justify-center">
-            <div ref={cyRef} className="w-full h-[400px]" />
+        <div className="flex w-full h-[400px] justify-center items-center">
+          {/* Centered STL Viewer (shows uploaded or default STL) */}
+          <div className="bg-gray-100 border rounded flex flex-col items-center justify-center w-full max-w-3xl">
+            <div style={{ width: '100%', height: '350px' }}>
+              <STLViewer url={stlUrl || '/data/model.stl'} />
+            </div>
           </div>
         </div>
 
