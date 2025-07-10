@@ -274,6 +274,7 @@ def predict_missing_links(ttl_file, model_path, top_k=10):
         scores = torch.sigmoid(model.decode(z, edge_tensor))
 
         top_scores, top_indices = torch.topk(scores, min(top_k, len(scores)))
+        
         filtered_scores = []
         filtered_indices = []
         for i, score in enumerate(top_scores):
@@ -283,15 +284,16 @@ def predict_missing_links(ttl_file, model_path, top_k=10):
 
         predicted_links = [candidate_edges[idx] for idx in filtered_indices]
         predicted_labels = [candidate_labels[idx] for idx in filtered_indices]
-
+        
         print(f"📊 Top {top_k} predicted missing `botAiLab:supports` links:")
-        for score, (i, j), _ in zip(
-            filtered_scores, predicted_links, predicted_labels
-        ):
+        for score, (i, j), _ in zip(filtered_scores, predicted_links, predicted_labels):
             subj_uri = rdflib.URIRef(index_node[i])
             obj_uri = rdflib.URIRef(index_node[j])
-            print(f"{subj_uri} → {obj_uri} | score={score:.4f}")
-            original_graph.add((subj_uri, BOTAI.supports, obj_uri))
+            triple = (subj_uri, BOTAI.supports, obj_uri)
+
+            if triple not in original_graph:
+                original_graph.add(triple)
+                print(f"{subj_uri} → {obj_uri} | score={score:.4f}")
 
         namespace_manager = NamespaceManager(original_graph)
         namespace_manager.bind("local", LOCAL)
@@ -305,6 +307,7 @@ def predict_node_classes(ttl_file, model_path):
     original_graph.parse(ttl_file, format="turtle")
 
     target_nodes = {}
+    target_classes.append(BOT.Element)
     for cls in target_classes:
         for s in original_graph.subjects(RDF.type, cls):
             target_nodes[s] = cls
@@ -330,14 +333,17 @@ def predict_node_classes(ttl_file, model_path):
         logits = model(data.x, data.edge_index, data.edge_type)
         predictions = logits.argmax(dim=1)
 
-    # Compare predictions to original class labels
     print("📊 Predictions on bot:Element nodes:")
     for idx in element_indices:
         node_uri = rdflib.URIRef(index_node[idx])
-        pred_class = predictions[idx].item()
+        pred_class   = predictions[idx].item()
         predicted_uri = inv_label_map[pred_class]
-        original_graph.add((node_uri, RDF.type, predicted_uri))
-        print(f"{node_uri} → Predicted: {predicted_uri.split('#')[-1]}")
+
+        triple = (node_uri, RDF.type, predicted_uri)
+    
+        if triple not in original_graph:
+            original_graph.add(triple)
+            print(f"{node_uri} → Predicted: {predicted_uri.split('#')[-1]}")
 
     namespace_manager = NamespaceManager(original_graph)
     namespace_manager.bind("botAiLab", BOTAI)
