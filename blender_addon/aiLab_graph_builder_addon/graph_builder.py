@@ -273,8 +273,8 @@ class GraphBuilder:
                 overlap_z = (a_min.z <= b_max.z) and (b_min.z <= a_max.z)
 
                 if overlap_x and overlap_y and overlap_z:
-                    self.graph.add((elem_a["element_uri"], BOTAILAB.intersects, elem_b["element_uri"]))
-                    self.graph.add((elem_b["element_uri"], BOTAILAB.intersects, elem_a["element_uri"]))
+                    self.graph.add((elem_a["element_uri"], BOTAILAB.intersectsElement, elem_b["element_uri"]))
+                    self.graph.add((elem_b["element_uri"], BOTAILAB.intersectsElement, elem_a["element_uri"]))
                     print(f"{elem_a['element_uri']} intersects {elem_b['element_uri']}")
 
     def save_graph(self, filepath="building_graph.ttl"):

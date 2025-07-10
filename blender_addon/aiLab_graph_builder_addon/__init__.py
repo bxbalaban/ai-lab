@@ -1,7 +1,7 @@
 bl_info = {
     "name": "AiLab Graph Builder",
     "author": "Jonas",
-    "version": (1, 0),
+    "version": (1, 1),
     "blender": (3, 0, 0),
     "location": "View3D > Tool Shelf",
     "description": "Generate RDF graph for a building collection and export",
