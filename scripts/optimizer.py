@@ -15,7 +15,7 @@ GEO = Namespace("http://www.opengis.net/ont/geosparql#")
 LOCAL = Namespace("http://example.org/building/")
 
 relation_uris_for_link_inference = [
-    BOTAI.adjacentElement,
+    BOTAI.isBelow,
     BOTAI.isAbove,
     BOTAI.intersectsElement,
 ]
@@ -23,6 +23,7 @@ relation_uris_for_link_inference = [
 relation_uris_for_node_classification = [
     BOTAI.adjacentElement,
     BOTAI.isAbove,
+    BOTAI.isBelow,
     BOTAI.intersectsElement,
 ]
 
@@ -40,7 +41,7 @@ num_features = 7  # x, y, z, w, h, d, rot
 
 
 class GeoNodeClassifier(nn.Module):
-    def __init__(self, in_channels, hidden_channels=64):
+    def __init__(self, in_channels, hidden_channels=128):
         super().__init__()
         num_relations = len(relation_uris_for_node_classification)
         num_classes = len(label_map)
@@ -56,7 +57,7 @@ class GeoNodeClassifier(nn.Module):
 
 
 class GeoLinkPredictor(nn.Module):
-    def __init__(self, in_channels, hidden_channels=64, num_relations=3):
+    def __init__(self, in_channels, hidden_channels=128, num_relations=3):
         super().__init__()
         self.conv1 = RGCNConv(in_channels, hidden_channels, num_relations)
         self.conv2 = RGCNConv(hidden_channels, hidden_channels, num_relations)
